@@ -13,16 +13,13 @@ Drop the two files in your project.  Set the `Filepicker API Key` in your plist 
 ```Objective-C
 imgGetter = [[FPImagePicker alloc] initWithDelegate:self];
 ```
-
 Make sure you store it somewhere it won't be deallocated until you're done with it (e.g. instance variable, not local).
 
 3. Pick an image.
 ```Objective-C
 [imgGetter getImageFromSource:UIImagePickerControllerSourceTypeCamera];
 ```
-
 Use the standard `UIImagePickerController` source types.
-
 At this point, the image is uploaded to Filepicker as an uncompressed jpg.
 
 4. Get the image back.  If your delegate has implemented the `FPImagePickerDidGetImage:` method, it will be called with the image taken as soon as the upload starts.
