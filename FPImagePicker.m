@@ -36,6 +36,7 @@
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
   NSLog(@"didFinishPickingMediaWithInfo: %@", info);
   UIImage* thumbnail = [info valueForKey:UIImagePickerControllerEditedImage];
+  UIImageWriteToSavedPhotosAlbum(thumbnail, nil, nil, nil);
 
   NSString* filepickerKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"Filepicker API Key"];
   NSString* fn = [NSString stringWithFormat:@"%@.jpg", [[NSUUID UUID] UUIDString]];
