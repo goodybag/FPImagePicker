@@ -1,4 +1,6 @@
-//  FPImagePicker.m
+//
+//  ImageGetter.m
+//  dresden
 //
 //  Created by Geoff Parker on 3/13/13.
 //  Copyright (c) 2013 Goodybag. All rights reserved.
@@ -15,7 +17,7 @@
     [imagePicker setDelegate:self];
     [imagePicker setAllowsEditing:YES];
   }
-  return self;
+  return self;  
 }
 
 - (id)initWithDelegate:(UIViewController<FPImagePickerDelegate> *)delegate {
@@ -36,23 +38,27 @@
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
   NSLog(@"didFinishPickingMediaWithInfo: %@", info);
   UIImage* thumbnail = [info valueForKey:UIImagePickerControllerEditedImage];
-  UIImageWriteToSavedPhotosAlbum(thumbnail, nil, nil, nil);
-
+  if ([imagePicker sourceType] == UIImagePickerControllerSourceTypeCamera)
+    UIImageWriteToSavedPhotosAlbum(thumbnail, nil, nil, nil);
+  
+  
+    
   NSString* filepickerKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"Filepicker API Key"];
   NSString* fn = [NSString stringWithFormat:@"%@.jpg", [[NSUUID UUID] UUIDString]];
   NSString* path = [NSString stringWithFormat:@"/api/store/S3?key=%@&filename=%@", filepickerKey, fn];
-
+  
   AFHTTPClient* client = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:@"https://www.filepicker.io"]];
-
+  
+  // The three magic lines to get a json request.  no idea.
   [client setDefaultHeader:@"Accept" value:@"application/json"];
   [client registerHTTPOperationClass:[AFJSONRequestOperation class]];
-
+  
   NSMutableURLRequest* request = [client multipartFormRequestWithMethod:@"POST" path:path parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
     [formData appendPartWithFileData:UIImageJPEGRepresentation(thumbnail, 1.0) name:@"fileUpload" fileName:fn mimeType:@"image/jpeg"];
   }];
-
+  
   AFJSONRequestOperation* operation = [[AFJSONRequestOperation alloc] initWithRequest:request];
-
+  
   id<FPImagePickerDelegate> delegate = [self delegate]; // local vars work with blocks better than methods.
   [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
     if (delegate != nil && [delegate respondsToSelector:@selector(FPImagePickerDidUploadImageWithUrl:)])
@@ -62,10 +68,10 @@
     if (delegate != nil && [delegate respondsToSelector:@selector(FPImagePickerUploadDidFailWithError:)])
       [delegate FPImagePickerUploadDidFailWithError:err];
   }];
-
+  
   [client enqueueHTTPRequestOperation:operation];
-
-
+  
+  
   [[self delegate] dismissViewControllerAnimated:YES completion:^{
     if ([self delegate] != nil && [[self delegate] respondsToSelector:@selector(FPImagePickerDidGetImage:)])
       [[self delegate] FPImagePickerDidGetImage:thumbnail];
